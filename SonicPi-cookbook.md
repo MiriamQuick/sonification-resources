@@ -232,3 +232,75 @@ end
 puts ("Data normalised!")
 puts ndata
 ```
+
+## Note Density Function
+Use this code to map data to the density of notes in a time period. You can use this to create a Geiger-counter-like effect, where the larger the value, the denser the clicks. This example uses an array from 1 to 16 and sets `maxClicks` to 16 per datapoint; you can also use normalised data or change the value of `maxClicks`.
+
+```ruby
+
+# -------------
+# Load data
+# -------------
+data = [1, 5, 11, 2, 9, 16, 5, 6] # Set up placeholder array between 1 and 16
+
+
+# ---------------------------
+# Define noteDensity function
+# ---------------------------
+puts ("Defining noteDensity function")
+
+define :noteDensity do |array, level|
+  possibles = (0..array.length-1).to_a # Make an array of indexes
+  
+  # Run a loop "level" times
+  level.times do
+    chosen = possibles.sample(1) # Pick one random index from the possibles array
+    possibles.delete(chosen) # Remove it from the possibles array
+    array[chosen] = 1 # Set it to "on"
+  end
+  
+  return array
+  
+end
+
+# ------------------
+# Play sonification!
+# ------------------
+
+counter = 0; # Initialise data counter
+
+
+# START THE LOOP!
+data.length.times do |datum|
+  
+  puts counter
+  
+  maxClicks = 16 # Set max clicks per datapoint
+  tickGap = 3.0/maxClicks # Set gap between clicks
+  
+  # Choose a variable to sonify
+  geig = data[counter.to_i] # Get the datapoint for that variable for that row
+  
+  puts(geig)
+  
+  # Set up array of data
+  geigArray = Array.new(maxClicks) {|i| 0 } # Create an array of 0s
+  noteDensity(geigArray, geig) # Add data to the array
+  
+  # loop over each array
+  geigArray.each do |pulse|
+    if (pulse == 1) # If the pulse is on...
+      use_synth :beep
+      play 72, release: 0.05 # Play a short beep sound
+    end
+    
+    sleep tickGap # Add gap between ticks
+  end
+  
+  sleep 1
+  
+  # Increment the counter
+  counter += 1
+  
+end
+```
